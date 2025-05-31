@@ -1,0 +1,100 @@
+#include <DHT.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+#define DHTPIN 3
+#define DHTTYPE DHT11
+
+#define RAINDROP_PIN A0
+#define SOUND_PIN 2
+#define LDR_PIN A1
+
+#define POMPA_PIN 8
+#define LAMPU_PIN 9
+
+#define RAINDROP_THRESHOLD 400
+#define LDR_THRESHOLD 300
+#define TEMP_HIGH 30
+#define HUMIDITY_LOW 40
+
+DHT dht(DHTPIN, DHTTYPE);
+LiquidCrystal_I2C lcd(0x27, 16, 2);  // Alamat I2C bisa berbeda, biasanya 0x27 atau 0x3F
+
+void setup() {
+  Serial.begin(9600);
+  
+  pinMode(RAINDROP_PIN, INPUT);
+  pinMode(SOUND_PIN, INPUT);
+  pinMode(LDR_PIN, INPUT);
+  pinMode(POMPA_PIN, OUTPUT);
+  pinMode(LAMPU_PIN, OUTPUT);
+  
+  dht.begin();
+  lcd.init();
+  lcd.backlight();
+  
+  digitalWrite(POMPA_PIN, LOW);
+  digitalWrite(LAMPU_PIN, LOW);
+}
+
+void loop() {
+  int raindropValue = analogRead(RAINDROP_PIN);
+  int soundValue = digitalRead(SOUND_PIN);
+  int ldrValue = analogRead(LDR_PIN);
+  
+  float temp = dht.readTemperature();
+  float humidity = dht.readHumidity();
+
+  // Serial monitor
+  Serial.println("==== Status Sensor ====");
+  Serial.print("Raindrop: "); Serial.println(raindropValue);
+  Serial.print("Sound: "); Serial.println(soundValue == HIGH ? "Detected" : "No sound");
+  Serial.print("LDR: "); Serial.println(ldrValue);
+  Serial.print("Temp: "); Serial.print(temp); Serial.println(" C");
+  Serial.print("Humidity: "); Serial.print(humidity); Serial.println(" %");
+
+  // Kontrol Pompa
+  if (raindropValue < RAINDROP_THRESHOLD) {
+    digitalWrite(POMPA_PIN, LOW);
+    Serial.println("Pompa: DIMATIKAN (Hujan)");
+  } else {
+    if (temp > TEMP_HIGH || humidity < HUMIDITY_LOW) {
+      digitalWrite(POMPA_PIN, HIGH);
+      Serial.println("Pompa: DINYALAKAN");
+    } else {
+      digitalWrite(POMPA_PIN, LOW);
+      Serial.println("Pompa: DIMATIKAN");
+    }
+  }
+
+  // Deteksi suara abnormal
+  if (soundValue == HIGH) {
+    Serial.println("Peringatan: Suara abnormal terdeteksi!");
+  }
+
+  // Kontrol Lampu
+  if (ldrValue < LDR_THRESHOLD) {
+    digitalWrite(LAMPU_PIN, HIGH);
+    Serial.println("Lampu tumbuh: DINYALAKAN");
+  } else {
+    digitalWrite(LAMPU_PIN, LOW);
+    Serial.println("Lampu tumbuh: DIMATIKAN");
+  }
+
+  // Tampilkan di LCD
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print("T:");
+  lcd.print(temp, 1);
+  lcd.print("C H:");
+  lcd.print(humidity, 0);
+  lcd.print("%");
+
+  lcd.setCursor(0,1);
+  lcd.print("P:");
+  lcd.print(digitalRead(POMPA_PIN) ? "ON " : "OFF");
+  lcd.print(" L:");
+  lcd.print(digitalRead(LAMPU_PIN) ? "ON " : "OFF");
+
+  delay(2000);
+}
