@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portofolio Annisa Dina Maharani</title>
+    <link rel="stylesheet" href="style.css">
+    </head>
+<body>
+    <header class="header">
+        <div class="container-header">
+            <h1>Portofolio UI/UX Designer</h1>
+            <div class="navigation">
+                <ul>
+                    <li><a href="#tentang">Tentang</a></li>
+                    <li><a href="#keahlian">Keahlian</a></li>
+                    <li><a href="#proyek">Proyek</a></li>
+                    <li><a href="#kontak">Kontak</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="content">
+            <section id="tentang" class="card">
+                <h2>Tentang Saya</h2>
+                <img src="adm1.jpg" alt="Foto Profile Annisa" style="width:100px; border-radius: 5px;">
+                <p>Saya adalah Annisa Dina Maharani, mahasiswa semester 5 jurusan Teknik Informatika. Fokus saya adalah di bidang UI/UX Design.</p>
+                <p style="color: blue; font-size: 14px;">Saya bersemangat dalam menciptakan antarmuka yang efisien dan pengalaman pengguna yang memuaskan</p>
+            </section>
+            
+            <hr>
+
+            <section id="proyek" class="card">
+                <h2>Proyek Terbaru</h2>
+                <article>
+                    <h3>Project Membangun Web Pengelolaan Sampah</h3>
+                    <p>Studi kasus tentang perbaikan alur pengguna pada aplikasi E-commerce. Dikerjakan menggunakan Figma.</p>
+                    <a href="https://github.com" target="_blank" class="btn">Lihat Detail</a>
+                </article>
+                <article>
+                    <h3>Project Web Explore Wisata Lampung</h3>
+                    <p>Pembuatan sebuah web yang mengelola wisata-wisata yang ada di lampung</p>
+                    <a href="https://explorelampung.co.id/" target="_blank" class="btn">Lihat Detail</a>
+                </article>
+            </section>
+        </div>
+        
+        <div class="sidebar">
+            <div id="keahlian" class="widget">
+                <h3>Keahlian Saya</h3>
+                <ul>
+                    <li class="highlight">Figma Prototyping</li>
+                    <li>User Research</li>
+                    <li>Wireframing</li>
+                    <li>Usability Testing</li>
+                </ul>
+            </div>
+            
+            <div class="widget">
+                <h3>Kontak Saya</h3>
+                <p>Email: <a href="mailto:annisasmanis@gmail.com">annisasmanis@gmail.com</a></p>
+                <p>Telepon: <a href="tel:085664851383">085664851383</a></p>
+                <p>Instagram: <a href="https://instagram.com/annisadinam_" target="_blank">annisadinam_</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <hr>
+    
+    <section class="form-wrapper">
+        <div class="form-container">
+            <h1>Formulir Minat Kolaborasi</h1>
+            <form action="#" method="POST">
+                <label for="nama">Nama Anda <span class="required"></span></label>
+                <input type="text" id="nama" name="nama" required>
+                
+                <label for="email">Email <span class="required">*</span></label>
+                <input type="email" id="email" name="email" required>
+                
+                <label for="minat">Jenis Kolaborasi</label>
+                <select id="minat" name="minat">
+                    <option value="freelance">Freelance Project</option>
+                    <option value="magang">Peluang Magang</option>
+                    <option value="diskusi">Diskusi Umum</option>
+                </select>
+                
+                <label for="pesan">Pesan</label>
+                <textarea id="pesan" name="pesan" rows="4" placeholder="Tulis pesan singkat..."></textarea>
+                
+                <button type="submit">Kirim Form</button>
+            </form>
+        </div>
+    </section>
