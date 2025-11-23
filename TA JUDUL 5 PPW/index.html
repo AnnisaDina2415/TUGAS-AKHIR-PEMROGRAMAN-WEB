@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kalkulator</title>
+  <style>
+    :root{
+      --bg:#ffe4f2; --panel:#fff0f7; --accent:#ff3b9d; --muted:#a33e70; --danger:#ff4c4c;
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial; background:var(--bg); margin:0; padding:20px; display:flex; align-items:center; justify-content:center; min-height:100vh}
+    .wrap{width:100%; max-width:420px}
+    .card{background:var(--panel); border-radius:14px; box-shadow:0 6px 18px rgba(255, 0, 128, 0.15); padding:16px}
+    
+    .header{text-align:center; margin-bottom:16px; color:var(--accent); font-size:24px; font-weight:bold}
+
+    .display{background:#ff8cc9; color:#fff; border-radius:10px; padding:12px; text-align:right; min-height:84px; display:flex; flex-direction:column; justify-content:space-between; box-shadow:inset 0 0 10px rgba(255,255,255,0.3)}
+    .expr{font-size:14px; color:rgba(255,255,255,0.8); word-break:break-all}
+    .out{font-size:32px; font-weight:700; letter-spacing:0.6px}
+
+    .top-row{display:flex; gap:8px; margin:12px 0 8px}
+    .btn{flex:1; padding:8px 10px; border-radius:8px; background:#ffd5ec; border:1px solid #ffc7e4; cursor:pointer; font-weight:600; color:#b31963; transition:0.15s}
+    .btn:active{transform:translateY(1px)}
+    .btn.op{background:#ffb3dd; color:#b3005c}
+    .btn.warn{background:#ffe3e3}
+
+    .grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px}
+    .key{padding:18px; background:#fff; border-radius:8px; text-align:center; font-size:18px; font-weight:600; border:1px solid #ffd0eb; cursor:pointer; color:#cc1d70; transition:0.15s; box-shadow:0 3px 8px rgba(255,0,128,0.1)}
+    .key.zero{grid-column:span 2}
+    .key.op{background:#ffbde7; color:#b3005c}
+    .key.eq{background:var(--accent); color:#fff; grid-row:span 2; display:flex; align-items:center; justify-content:center; font-size:26px; box-shadow:0 4px 10px rgba(255,0,128,0.2)}
+
+    .side{display:flex; gap:10px; margin-top:12px}
+    .panel{flex:1; background:#fff; border-radius:8px; padding:8px; border:1px solid #ffd0eb; box-shadow:0 3px 8px rgba(255,0,128,0.1)}
+    .panel h4{margin:4px 0 8px; font-size:13px; color:#b31963}
+    .history-list{max-height:130px; overflow:auto}
+    .history-item{font-size:13px; padding:6px; border-radius:6px; cursor:pointer; color:#b31963}
+    .history-item:hover{background:#ffe3f3}
+
+    .mem-ind{font-size:13px; color:var(--muted)}
+
+    @media (max-width:420px){.wrap{padding:0 6px}.display{min-height:72px}.out{font-size:26px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="header">Kalkulator</div>
+      
+      <div class="display" role="region" aria-label="display kalkulator">
+        <div class="expr" id="expression">0</div>
+        <div class="out" id="output">0</div>
+      </div>
+
+      <div class="top-row">
+        <button class="btn" id="mc">MC</button>
+        <button class="btn" id="mr">MR</button>
+        <button class="btn" id="mplus">M+</button>
+        <button class="btn" id="mminus">M-</button>
+      </div>
+
+      <div class="grid" style="margin-top:8px">
+        <div class="key" id="ce">CE</div>
+        <div class="key" id="c">C</div>
+        <div class="key" id="back">⌫</div>
+        <div class="key op" data-op="/">÷</div>
+
+        <div class="key" data-num="7">7</div>
+        <div class="key" data-num="8">8</div>
+        <div class="key" data-num="9">9</div>
+        <div class="key op" data-op="*">×</div>
+
+        <div class="key" data-num="4">4</div>
+        <div class="key" data-num="5">5</div>
+        <div class="key" data-num="6">6</div>
+        <div class="key op" data-op="-">−</div>
+
+        <div class="key" data-num="1">1</div>
+        <div class="key" data-num="2">2</div>
+        <div class="key" data-num="3">3</div>
+        <div class="key op" data-op="+">+</div>
+
+        <div class="key zero" data-num="0">0</div>
+        <div class="key" id="dot">.</div>
+        <div class="key eq" id="equals">=</div>
+      </div>
+
+      <div class="side">
+        <div class="panel">
+          <h4>History (5 terakhir)</h4>
+          <div id="history" class="history-list">
+          </div>
+        </div>
+        <div class="panel">
+          <h4>Memory</h4>
+          <div class="mem-ind">Stored: <span id="memVal">0</span></div>
+          <div style="margin-top:8px;font-size:13px;color:var(--muted)">Gunakan M+, M-, MR, MC</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let expr = '';
+    let output = '0';
+    let memory = 0;
+    const history = [];
+
+    const elExpr = document.getElementById('expression');
+    const elOut = document.getElementById('output');
+    const elHistory = document.getElementById('history');
+    const elMemVal = document.getElementById('memVal');
+
+    function tokenize(s){
+      const tokens = [];
+      const re = /\s*([0-9]*\.?[0-9]+|[()+\-*/])\s*/g;
+      let m; while((m=re.exec(s))!==null) tokens.push(m[1]);
+      return tokens;
+    }
+
+    function toRPN(tokens){
+      const out = [];
+      const ops = [];
+      const prec = {'+':1,'-':1,'*':2,'/':2};
+      for(const t of tokens){
+        if(!isNaN(t)) out.push(t);
+        else if(['+','-','*','/'].includes(t)){
+          while(ops.length && ['+','-','*','/'].includes(ops[ops.length-1]) && prec[ops[ops.length-1]]>=prec[t]){
+            out.push(ops.pop());
+          }
+          ops.push(t);
+        } else if(t==='('){ ops.push(t);
+        } else if(t===')'){
+          while(ops.length && ops[ops.length-1]!== '(') out.push(ops.pop());
+          ops.pop();
+        }
+      }
+      while(ops.length) out.push(ops.pop());
+      return out;
+    }
+
+    function evalRPN(rpn){
+      const st = [];
+      for(const t of rpn){
+        if(!isNaN(t)) st.push(parseFloat(t));
+        else{
+          const b = st.pop(); const a = st.pop();
+          if(t==='+' ) st.push(a+b);
+          if(t==='-') st.push(a-b);
+          if(t==='*') st.push(a*b);
+          if(t==='/' ){
+            if(b===0) throw new Error('DivisionByZero');
+            st.push(a/b);
+          }
+        }
+      }
+      return st.pop();
+    }
+
+    function safeEvaluate(expression){
+      if(expression.trim()==='') return 0;
+      const normalized = expression.replace(/×/g,'*').replace(/÷/g,'/').replace(/−/g,'-');
+      try{
+        const tokens = tokenize(normalized);
+        const rpn = toRPN(tokens);
+        const val = evalRPN(rpn);
+        if(!isFinite(val)) throw new Error('NonFinite');
+        return val;
+      }catch(err){
+        if(err.message==='DivisionByZero') return 'Error: Pembagian dengan nol';
+        return 'Error';
+      }
+    }
+
+    function refresh(){
+      elExpr.innerText = expr || '0';
+      elOut.innerText = output;
+      elMemVal.innerText = Number.isFinite(memory)?(Math.round(memory*1e12)/1e12):memory;
+      renderHistory();
+    }
+
+    function pushHistory(item){
+      history.unshift(item);
+      if(history.length>5) history.pop();
+    }
+
+    function renderHistory(){
+      elHistory.innerHTML = history.map((h,idx)=>`<div class="history-item" data-idx="${idx}">${h}</div>`).join('') || '<div style="color:var(--muted);font-size:13px;padding:6px">Belum ada</div>';
+      Array.from(elHistory.querySelectorAll('.history-item')).forEach(el=>{
+        el.onclick = ()=>{
+          const i = +el.getAttribute('data-idx');
+          const item = history[i];
+          if(!item) return;
+          expr = item.split(' = ')[0];
+          output = item.split(' = ')[1] || '';
+          refresh();
+        }
+      });
+    }
+
+    function appendNumber(n){
+      if(expr.endsWith(')')) return; 
+      expr += n;
+      output = safeEvaluate(expr);
+      refresh();
+    }
+
+    function appendDot(){
+      const match = expr.match(/([0-9]*\.?[0-9]+)$/);
+      if(match){
+        if(match[0].includes('.')) return; 
+        expr += '.';
+      } else {
+        if(expr === '' || /[+\-*/(]$/.test(expr)) expr += '0.'; else expr += '0.';
+      }
+      output = safeEvaluate(expr);
+      refresh();
+    }
+
+    function appendOp(op){
+      if(expr===''){
+        if(op==='-') expr = '-'; 
+        return refresh();
+      }
+      if(/[+\-*/]$/.test(expr)){
+        expr = expr.slice(0,-1) + op;
+      } else {
+        expr += op;
+      }
+      output = safeEvaluate(expr.replace(/\-$|\+$|\*$/,'') );
+      refresh();
+    }
+
+    function clearEntry(){
+      if(expr==='') return;
+      if(/[+\-*/]$/.test(expr)){
+        expr = expr.slice(0,-1);
+        refresh();
+        return;
+      }
+      expr = expr.replace(/([0-9]*\.?[0-9]+)$/, '');
+      output = safeEvaluate(expr);
+      refresh();
+    }
+
+    function clearAll(){ expr=''; output='0'; refresh(); }
+
+    function backspace(){
+      if(expr.length===0) return;
+      expr = expr.slice(0,-1);
+      output = expr ? safeEvaluate(expr) : '0';
+      refresh();
+    }
+
+    function calculate(){
+      if(!expr) return;
+      const val = safeEvaluate(expr);
+      if(typeof val === 'string' && val.startsWith('Error')){
+        output = val; refresh(); return;
+      }
+      const rounded = Math.round(val*1e12)/1e12;
+      pushHistory(`${expr} = ${rounded}`);
+      output = String(rounded);
+      expr = String(rounded); 
+      refresh();
+    }
+
+    function memClear(){ memory = 0; refresh(); }
+    function memRecall(){ output = String(Number.isFinite(memory)?(Math.round(memory*1e12)/1e12):memory); expr = String(output); refresh(); }
+    function memAdd(){ const v = parseFloat(output) || 0; memory = (Number.isFinite(memory)?memory:0) + v; refresh(); }
+    function memSub(){ const v = parseFloat(output) || 0; memory = (Number.isFinite(memory)?memory:0) - v; refresh(); }
+
+    document.querySelectorAll('.key[data-num]').forEach(k=>k.addEventListener('click', ()=>appendNumber(k.getAttribute('data-num'))));
+    document.getElementById('dot').addEventListener('click', appendDot);
+    document.querySelectorAll('.key.op').forEach(k=>k.addEventListener('click', ()=>appendOp(k.getAttribute('data-op'))));
+    document.getElementById('equals').addEventListener('click', calculate);
+    document.getElementById('ce').addEventListener('click', clearEntry);
+    document.getElementById('c').addEventListener('click', clearAll);
+    document.getElementById('back').addEventListener('click', backspace);
+
+    document.getElementById('mc').addEventListener('click', memClear);
+    document.getElementById('mr').addEventListener('click', memRecall);
+    document.getElementById('mplus').addEventListener('click', memAdd);
+    document.getElementById('mminus').addEventListener('click', memSub);
+
+    window.addEventListener('keydown', (e)=>{
+      if(e.key >= '0' && e.key <= '9'){ appendNumber(e.key); e.preventDefault(); }
+      else if(e.key === '.') { appendDot(); e.preventDefault(); }
+      else if(e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') { appendOp(e.key); e.preventDefault(); }
+      else if(e.key === 'Enter' || e.key === '=') { calculate(); e.preventDefault(); }
+      else if(e.key === 'Backspace') { backspace(); e.preventDefault(); }
+      else if(e.key === 'Escape') { clearAll(); }
+    });
+
+    refresh();
+  </script>
+</body>
+</html>
