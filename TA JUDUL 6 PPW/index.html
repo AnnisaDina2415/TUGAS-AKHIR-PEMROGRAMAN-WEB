@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Weather Dashboard — Modern Minimal</title>
+
+  <!-- Fonts & CSS -->
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="app">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="logo">☁️</div>
+
+        <!-- Brand text -->
+        <div class="brand-text">
+          <h1 class="title">Weather Dashboard</h1>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="btnTheme" class="btn-ico" aria-label="toggle theme">🌙</button>
+        <button id="btnUnit" class="btn-chip" aria-label="toggle unit">°C</button>
+      </div>
+    </header>
+
+    <main class="grid">
+
+      <!-- LEFT MAIN SECTION -->
+      <section class="panel main-panel card" aria-label="Weather Panel">
+        <div class="search-row">
+          <input id="searchInput" class="input" type="search"
+                 placeholder="Cari kota (mis. Jakarta, ID)..." autocomplete="off" />
+          <button id="btnRefresh" class="btn primary">Refresh</button>
+        </div>
+
+        <div id="suggestions" class="suggestions hidden" role="listbox"></div>
+
+        <div id="status" class="status muted">Siap</div>
+
+        <article id="currentCard" class="card current-card hidden" aria-live="polite">
+          <div class="current-top">
+            <div>
+              <div id="placeName" class="place">—</div>
+              <div id="localTime" class="muted small">—</div>
+            </div>
+
+            <div class="temp-block">
+              <div id="weatherIcon" class="weather-icon"></div>
+              <div>
+                <div id="tempVal" class="temp">--°</div>
+                <div id="desc" class="muted small">—</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="meta-row">
+            <div class="meta-item">💧 <span id="humidity">--%</span></div>
+            <div class="meta-item">💨 <span id="wind">--</span></div>
+            <div class="spacer"></div>
+            <button id="btnSaveFav" class="btn ghost">⭐ Simpan</button>
+          </div>
+
+          <div id="forecastRow" class="forecast-row"></div>
+        </article>
+      </section>
+
+      <!-- FAVORITES -->
+      <aside class="panel right-panel card" aria-label="Favorite Cities">
+        <div class="fav-head">
+          <h2 class="fav-title">Favorites</h2>
+          <button id="btnClearFav" class="btn ghost tiny">Hapus</button>
+        </div>
+
+        <div id="favList" class="fav-list"></div>
+      </aside>
+
+    </main>
+
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
